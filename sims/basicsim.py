@@ -29,7 +29,7 @@ class Node:
     def incr_pebbles(self):
         self.pebbles += 1
 
-    def is_toppled(self):
+    def is_unstable(self):
         return (len(self.neighbors) <= self.pebbles)
 
     def stabilize(self):
@@ -41,25 +41,28 @@ class Graph:
     def __init__(self, nodes):
         self.nodes = nodes
 
-    def get_toppled(self):
-        return [node for node in self.nodes if node.is_toppled()]
+    def unstable(self):
+        return [node for node in self.nodes if node.is_unstable()]
 
     def get_nodes(self):
-        return [node.get_name() + str(node.get_pebbles) for node in self.nodes]
+        return self.nodes
 
     def __str__(self):
         return str({node.get_name():[[nb.get_name() for nb in node.get_neighbors()], node.get_pebbles()] for node in self.nodes})
 
-def generate_tree(n):
+def generate_tree(n, seed = None):
     indices = [i for i in range(2, n+1)]
     seed_a = Node('0', [], 0)
     seed_b = Node('1', [], 0)
     seed_a.add_neighbor(seed_b)
 
-    nodes = [seed_a, seed_b]
+    if seed == None:
+        nodes = [seed_a, seed_b]
+    else:
+        nodes = seed.get_nodes()
     for i in range(n-2):
         chosen = random.choice(nodes)
-        new_node = Node(indices[i], [], 1)
+        new_node = Node(str(indices[i]), [], 1)
         new_node.add_neighbor(chosen)
         nodes.append(new_node)
 
@@ -67,22 +70,25 @@ def generate_tree(n):
 
 def generate_cyclic(n):
     indices = [i for i in range(2, n+1)]
-    seed_a = Node('0', [], 1)
-    seed_b = Node('1', [], 1)
+    seed_a = Node('0', [], 0)
+    seed_b = Node('1', [], 0)
     seed_a.add_neighbor(seed_b)
 
     nodes = [seed_a, seed_b]
     for i in range(n-2):
-        new_node = Node(indices[i], [], 1)
+        new_node = Node(str(indices[i]), [], 1)
         new_node.add_neighbor(nodes[-1])
         nodes.append(new_node)
-
+    nodes[-1].add_neighbor(seed_a)
     return Graph(nodes)
 
 def loop(g):
-    if len(g.get_toppled()) == 0:
+    if len(g.unstable()) == 0:
         return g
     else:
-        for node in g.get_toppled():
+        for node in g.unstable():
             node.stabilize()
-    loop(g)
+        return loop(g)
+
+for i in range(1, 100):
+    print(loop(generate_tree(i)))
