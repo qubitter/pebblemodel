@@ -61,6 +61,21 @@ def generate_tree(n):
         chosen = random.choice(nodes)
         new_node = Node(indices[i], [], 1)
         new_node.add_neighbor(chosen)
+        nodes.append(new_node)
+
+    return Graph(nodes)
+
+def generate_cyclic(n):
+    indices = [i for i in range(2, n+1)]
+    seed_a = Node('0', [], 1)
+    seed_b = Node('1', [], 1)
+    seed_a.add_neighbor(seed_b)
+
+    nodes = [seed_a, seed_b]
+    for i in range(n-2):
+        new_node = Node(indices[i], [], 1)
+        new_node.add_neighbor(nodes[-1])
+        nodes.append(new_node)
 
     return Graph(nodes)
 
