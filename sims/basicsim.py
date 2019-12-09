@@ -51,13 +51,18 @@ class Graph:
         return str({node.get_name():[[nb.get_name() for nb in node.get_neighbors()], node.get_pebbles()] for node in self.nodes})
 
 def generate_tree(n):
-    seed_a = Node('a', [], 0)
-    seed_b = Node('b', [], 0)
+    indices = [i for i in range(2, n+1)]
+    seed_a = Node('0', [], 0)
+    seed_b = Node('1', [], 0)
     seed_a.add_neighbor(seed_b)
 
     nodes = [seed_a, seed_b]
-    for i in range(n):
+    for i in range(n-2):
         chosen = random.choice(nodes)
+        new_node = Node(indices[i], [], 1)
+        new_node.add_neighbor(chosen)
+
+    return Graph(nodes)
 
 def loop(g):
     if len(g.get_toppled()) == 0:
