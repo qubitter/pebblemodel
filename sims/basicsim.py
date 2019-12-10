@@ -32,7 +32,7 @@ class Node:
     def is_unstable(self):
         return (len(self.neighbors) <= self.pebbles)
 
-    def stabilize(self): #easier here
+    def topple(self): #easier here
         for neighbor in self.neighbors:
             neighbor.incr_pebbles()
         self.pebbles -= len(self.neighbors)
@@ -122,7 +122,7 @@ def loop(g):
         return True
     else:
         for node in g.unstable():
-            node.stabilize()
+            node.topple()
         return loop(g)
 
 for i in range(3, 100):
