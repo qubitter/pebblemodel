@@ -1,2 +1,4 @@
 from basicsim import *
-import random
+import random, sys
+
+print(sys.getrecursionlimit())

@@ -163,9 +163,9 @@ def loop(g):
             node.topple()
         return loop(g)
 
-
-for i in range(3, 100):
-    try:
-        print(f"{i}: {loop(generate_grid(i, i, i**i))}")
-    except RuntimeError:
-        print(f"{i}: {False}")
+if __name__ == '__main__':
+    for i in range(3, 100):
+        try:
+            print(f"{i}: {loop(generate_grid(i, i, i**i))}")
+        except RuntimeError:
+            print(f"{i}: {False}")
