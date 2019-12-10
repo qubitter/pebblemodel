@@ -157,7 +157,7 @@ def generate_grid(l, w, pebbles):
 
 def loop(g):
     if len(g.unstable()) == 0:
-        return True
+        return g
     else:
         for node in g.unstable():
             node.topple()
