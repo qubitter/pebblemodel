@@ -6,6 +6,9 @@ class Node:
         self.neighbors = neighbors
         self.pebbles = pebbles
 
+    def __str__(self):
+        return f"[{self.name}: {[n.get_name() for n in self.neighbors]}, {self.pebbles}]"
+
     def get_name(self):
         return self.name
 
@@ -110,12 +113,45 @@ def generate_complete(n, pebbles):
     return Graph(nodes)
 
 def generate_grid(l, w, pebbles):
-    indices = [i for i in range(2, n)]
+    indices = [i for i in range(2, l)]
     seed_a = Node('0', [], 0)
     seed_b = Node('1', [], 0)
     seed_a.add_neighbor(seed_b)
 
-    nodes = [seed_a, seed_b]
+    rnodes = [seed_a, seed_b]
+
+    allnodes = [rnodes]
+
+    for i in indices:
+        new = Node(str(i), [], 0)
+        rnodes[-1].add_neighbor(new)
+        rnodes.append(new)
+
+    for row in range(1, w):
+        indices = [i for i in range(2, l)]
+        seed_a = Node('0', [], 0)
+        seed_b = Node('1', [], 0)
+        seed_a.add_neighbor(seed_b)
+
+        seed_a.add_neighbor(allnodes[row-1][0])
+        seed_b.add_neighbor(allnodes[row-1][1])
+
+        thisrow = [seed_a, seed_b]
+
+        for i in indices:
+            new = Node(str(i), [], 0)
+            thisrow[-1].add_neighbor(new)
+            new.add_neighbor(allnodes[row-1][i])
+            thisrow.append(new)
+
+        allnodes.append(thisrow)
+
+    out = []
+
+    for i in allnodes: out += i
+
+    return Graph(i)
+
 
 def loop(g):
     if len(g.unstable()) == 0:
@@ -126,4 +162,4 @@ def loop(g):
         return loop(g)
 
 for i in range(3, 100):
-    print(f"{i}: {loop(generate_tree(i, i-2))}")
+    print(f"{i}: {loop(generate_grid(i, i, i**i))}")
