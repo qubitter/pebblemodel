@@ -51,7 +51,7 @@ class Graph:
         return self.nodes
 
     def __str__(self): #representation function for "pretty" printing
-        return str({node.get_name():[[nb.get_name() for nb in node.get_neighbors()], node.get_pebbles()] for node in self.nodes})
+        return str([node.get_pebbles() for node in self.nodes]) + ", " + str([[n.get_name() for n in node.get_neighbors()] for node in self.nodes])
 
 def generate_tree(n, pebbles, seed = None): #acyclic graph; seed is if we want to fold something in
     seed_a = Node('0', [], 0)
@@ -150,7 +150,9 @@ def generate_grid(l, w, pebbles):
 
     for i in allnodes: out += i
 
-    return Graph(i)
+    for i in range(pebbles): random.choice(out).incr_pebbles()
+
+    return Graph(out)
 
 
 def loop(g):
@@ -161,5 +163,9 @@ def loop(g):
             node.topple()
         return loop(g)
 
+
 for i in range(3, 100):
-    print(f"{i}: {loop(generate_grid(i, i, i**i))}")
+    try:
+        print(f"{i}: {loop(generate_grid(i, i, i**i))}")
+    except RuntimeError:
+        print(f"{i}: {False}")
