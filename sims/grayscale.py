@@ -2,13 +2,13 @@ from basicsim import *
 from PIL import Image
 import sys
 
-sys.setrecursionlimit(5000)
+sys.setrecursionlimit(32768)
 
 g = generate_grid(100, 100, 0)
 
 origin = g.get_nodes()[4750]
 
-origin.set_pebbles(2500)
+origin.set_pebbles(32768)
 
 final = loop(g).get_nodes()
 
