@@ -1,11 +1,12 @@
 import random
+from tools import ncr
 
 class Node:
-    def __init__(self, name, neighbors, pebbles, status="normal"):
+    def __init__(self, name, neighbors, pebbles, type="normal"):
         self.name = name
         self.neighbors = neighbors
         self.pebbles = pebbles
-        self.status = status # To check if node is a sink or a normal vertex
+        self.type = type # To check if node is a sink or a normal vertex
 
     def __str__(self):
         return f"[{self.name}: {[n.get_name() for n in self.neighbors]}, {self.pebbles}]"
@@ -24,6 +25,13 @@ class Node:
         if self not in neighbor.get_neighbors():
             neighbor.add_neighbor(self)
 
+    def remove_neighbor(self, neighbor):
+        if neighbor in self.neighbors:
+            nbs = set(self.neighbors)
+            nbs -= {neighbor}
+            self.neighbors = list(nbs)
+            neighbor.remove_neighbor(self)
+
     def is_neighboring(self, node):
         return (node in self.neighbors)
 
@@ -40,7 +48,7 @@ class Node:
         return (len(self.neighbors) <= self.pebbles)
 
     def topple(self): #easier here
-        if self.status=="normal":
+        if self.type=="normal":
             for neighbor in self.neighbors:
                 neighbor.incr_pebbles()
             self.pebbles -= len(self.neighbors)
@@ -228,6 +236,21 @@ def generate_bipartite(num_a, num_b, num_pebbles, num_edges=None):
 
     return Graph(nodes)
 
+def generate_random(n, pebbles):
+    nodes = [Node(str(i), [], 0) for i in range(n)]
+    edges = 0
+    for node in nodes:
+        for neighbor in nodes:
+            if neighbor not in node.get_neighbors():
+                if node not in neighbor.get_neighbors():
+                    if random.uniform(0, 1) > 0.5:
+                        node.add_neighbor(neighbor)
+                        edges += 1
+    for i in range(edges): random.choice(nodes).incr_pebbles()
+
+    return Graph(nodes)
+
+
 def loop(g):
     if len(g.unstable()) == 0:
         return g
@@ -239,6 +262,7 @@ def loop(g):
 if __name__ == '__main__':
     for i in range(3, 100):
         try:
-            print(f"{i}: {loop(generate_grid(i, i, i**2))}")
+            print(f"{i}: {loop(generate_random(i, 0))}")
+
         except RuntimeError:
             print(f"{i}: {False}")
