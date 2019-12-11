@@ -239,6 +239,6 @@ def loop(g):
 if __name__ == '__main__':
     for i in range(3, 100):
         try:
-            print(f"{i}: {loop(generate_grid(i, i, i**i))}")
+            print(f"{i}: {loop(generate_grid(i, i, i**2))}")
         except RuntimeError:
             print(f"{i}: {False}")
