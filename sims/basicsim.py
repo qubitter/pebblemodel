@@ -14,7 +14,7 @@ class Node:
         return self.neighbors
     
     def neighbors_to_str(self):
-        return str((list(map(lambda x: x.get_name(), self.neighbors))))
+        return str(list(map(lambda x: x.get_name(), self.neighbors)))
 
     def add_neighbor(self, neighbor): #so we can build graphs non-self-referentially
         self.neighbors.append(neighbor)
@@ -158,6 +158,38 @@ def generate_grid(l, w, pebbles):
 
     nodes = [seed_a, seed_b]
 
+@sink
+def generate_bipartite(num_a, num_b, num_pebbles, num_edges=None):
+    if not num_edges: num_edges = random.randint(0, num_a * num_b + 1) 
+    nodes_a = []
+    nodes_b = []
+
+    for i in range(num_a):
+        new_node = Node(f"a_{i}", [], 0)
+        nodes_a.append(new_node)
+        
+    for i in range(num_b):
+        new_node = Node(f"b_{i}", [], 0)
+        neighbor = random.choice(nodes_a)
+        new_node.add_neighbor(neighbor)
+        nodes_b.append(new_node)
+    num_edges -= num_b
+    
+    for node in nodes_a:
+        if not node.neighbors:
+            node.add_neighbor(random.choice(nodes_b))
+    num_edges -= num_a
+
+    for i in range(num_edges):
+        random.choice(nodes_a).get_new_neighbors(nodes_b, 1)
+    
+    nodes = nodes_a + nodes_b 
+
+    for i in range(num_pebbles):
+        random.choice(nodes).incr_pebbles()
+
+    return Graph(nodes)
+
 def loop(g):
     if len(g.unstable()) == 0:
         return True
@@ -166,5 +198,8 @@ def loop(g):
             node.topple()
         return loop(g)
 
-for i in range(3, 100):
-    print(f"{i}: {loop(generate_tree(i, i-2))}")
+# for i in range(3, 100):
+#     print(f"{i}: {loop(generate_tree(i, i-2))}")
+
+b = generate_bipartite(2, 3, 3, sink_neighbors=2)
+print (b.__str__())
