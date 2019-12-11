@@ -1,10 +1,11 @@
 import random
 
 class Node:
-    def __init__(self, name, neighbors, pebbles):
+    def __init__(self, name, neighbors, pebbles, status="normal"):
         self.name = name
         self.neighbors = neighbors
         self.pebbles = pebbles
+        self.status = status # To check if node is a sink or a normal vertex
 
     def __str__(self):
         return f"[{self.name}: {[n.get_name() for n in self.neighbors]}, {self.pebbles}]"
@@ -14,6 +15,9 @@ class Node:
 
     def get_neighbors(self):
         return self.neighbors
+
+    def neighbors_to_str(self):
+        return str(list(map(lambda x: x.get_name(), self.neighbors)))
 
     def add_neighbor(self, neighbor): #so we can build graphs non-self-referentially
         self.neighbors.append(neighbor)
@@ -36,13 +40,26 @@ class Node:
         return (len(self.neighbors) <= self.pebbles)
 
     def topple(self): #easier here
-        for neighbor in self.neighbors:
-            neighbor.incr_pebbles()
-        self.pebbles -= len(self.neighbors)
+        if self.status=="normal":
+            for neighbor in self.neighbors:
+                neighbor.incr_pebbles()
+            self.pebbles -= len(self.neighbors)
+
+    def get_new_neighbors(self, nodes, num_neighbors):
+
+        def new_neighbor(node):
+            if not self.is_neighboring(node): return node
+            return new_neighbor(random.choice(nodes))
+
+        for i in range(num_neighbors):
+            new_node = new_neighbor(random.choice(nodes))
+            self.add_neighbor(new_node)
 
 class Graph:
-    def __init__(self, nodes):
+    def __init__(self, nodes, sink=None):
         self.nodes = nodes
+        self.sink = sink
+        if not sink: self.sink = Node("sink", [], 0)
 
     def unstable(self):
         return [node for node in self.nodes if node.is_unstable()]
@@ -50,9 +67,31 @@ class Graph:
     def get_nodes(self):
         return self.nodes
 
-    def __str__(self): #representation function for "pretty" printing
-        return str([node.get_pebbles() for node in self.nodes]) + ", " + str([[n.get_name() for n in node.get_neighbors()] for node in self.nodes])
+    def get_sink(self):
+        return self.sink
 
+    def has_sink(self):
+        if self.sink.get_neighbors(): return True
+        return False
+
+    def __str__(self): #representation function for "pretty" printing
+        return str({node.get_name():[[nb.get_name() for nb in node.get_neighbors()], node.get_pebbles()] for node in self.nodes})
+        # Add sink neighbors list
+
+# Decorator that adds sink (keyword is sink_neighbors, which is the number of vertices that  the sink is connected to)
+# to a function that generates a graph (it will look like you're adding an
+# "Unexpected Keyword Argument" when you call the function, but this is fine)
+def sink(func):
+    def wrapper(*args, **kwargs):
+        sink_neighbors = kwargs.pop("sink_neighbors", 0)
+        g = func(*args, **kwargs)
+        sink = g.get_sink()
+        nodes = g.get_nodes()
+        sink.get_new_neighbors(nodes, sink_neighbors)
+        return g
+    return wrapper
+
+@sink
 def generate_tree(n, pebbles, seed = None): #acyclic graph; seed is if we want to fold something in
     seed_a = Node('0', [], 0)
     seed_b = Node('1', [], 0)
@@ -76,6 +115,7 @@ def generate_tree(n, pebbles, seed = None): #acyclic graph; seed is if we want t
 
     return Graph(nodes)
 
+@sink
 def generate_cyclic(n, pebbles): #circular cyclic graph
     indices = [i for i in range(2, n)]
     seed_a = Node('0', [], 0)
@@ -94,6 +134,7 @@ def generate_cyclic(n, pebbles): #circular cyclic graph
 
     return Graph(nodes)
 
+@sink
 def generate_complete(n, pebbles):
     indices = [i for i in range(2, n)]
     seed_a = Node('0', [], 0)
@@ -154,6 +195,38 @@ def generate_grid(l, w, pebbles):
 
     return Graph(out)
 
+
+@sink
+def generate_bipartite(num_a, num_b, num_pebbles, num_edges=None):
+    if not num_edges: num_edges = random.randint(0, num_a * num_b + 1)
+    nodes_a = []
+    nodes_b = []
+
+    for i in range(num_a):
+        new_node = Node(f"a_{i}", [], 0)
+        nodes_a.append(new_node)
+
+    for i in range(num_b):
+        new_node = Node(f"b_{i}", [], 0)
+        neighbor = random.choice(nodes_a)
+        new_node.add_neighbor(neighbor)
+        nodes_b.append(new_node)
+    num_edges -= num_b
+
+    for node in nodes_a:
+        if not node.neighbors:
+            node.add_neighbor(random.choice(nodes_b))
+    num_edges -= num_a
+
+    for i in range(num_edges):
+        random.choice(nodes_a).get_new_neighbors(nodes_b, 1)
+
+    nodes = nodes_a + nodes_b
+
+    for i in range(num_pebbles):
+        random.choice(nodes).incr_pebbles()
+
+    return Graph(nodes)
 
 def loop(g):
     if len(g.unstable()) == 0:
