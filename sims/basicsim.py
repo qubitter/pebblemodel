@@ -261,7 +261,7 @@ def loop(g):
 if __name__ == '__main__':
     for i in range(3, 100):
         try:
-            print(f"{i}: {loop(generate_random(i, 0))}")
-
+            loop(generate_random(i, "doesn't matter lol"))
+            print(f"{i}: {True}")
         except RuntimeError:
             print(f"{i}: {False}")
