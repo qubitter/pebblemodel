@@ -1,5 +1,4 @@
 import random
-from tools import ncr
 
 class Node:
     def __init__(self, name, neighbors, pebbles, type="normal"):
