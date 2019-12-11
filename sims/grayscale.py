@@ -8,7 +8,7 @@ g = generate_grid(100, 100, 0)
 
 origin = g.get_nodes()[4750]
 
-origin.set_pebbles(32768)
+origin.set_pebbles(16384)
 
 final = loop(g).get_nodes()
 
