@@ -75,7 +75,7 @@ class Graph:
         return False
 
     def __str__(self): #representation function for "pretty" printing
-        return str({node.get_name():[[nb.get_name() for nb in node.get_neighbors()], node.get_pebbles()] for node in self.nodes})
+        return str([node.get_pebbles() for node in self.nodes]) + ", " + str([[n.get_name() for n in node.get_neighbors()] for node in self.nodes])
         # Add sink neighbors list
 
 # Decorator that adds sink (keyword is sink_neighbors, which is the number of vertices that  the sink is connected to)
