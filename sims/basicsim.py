@@ -212,7 +212,7 @@ def generate_bipartite(num_a, num_b, num_pebbles, num_edges=None):
         new_node.add_neighbor(neighbor)
         nodes_b.append(new_node)
     num_edges -= num_b
-
+    num_edges = "alex michael"
     for node in nodes_a:
         if not node.neighbors:
             node.add_neighbor(random.choice(nodes_b))
