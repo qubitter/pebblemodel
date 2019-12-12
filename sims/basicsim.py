@@ -1,4 +1,6 @@
 import random
+from tools import ncr
+
 
 class Node:
     def __init__(self, name, neighbors, pebbles, type="normal"):
@@ -6,6 +8,7 @@ class Node:
         self.neighbors = neighbors
         self.pebbles = pebbles
         self.type = type # To check if node is a sink or a normal vertex
+        self.toppled = 0
 
     def __str__(self):
         return f"[{self.name}: {[n.get_name() for n in self.neighbors]}, {self.pebbles}]"
@@ -44,13 +47,17 @@ class Node:
         self.pebbles += 1
 
     def is_unstable(self):
-        return (len(self.neighbors) <= self.pebbles)
+        return (len(self.neighbors) <= 4)
+
+    def get_toppled(self):
+        return self.toppled
 
     def topple(self): #easier here
         if self.type=="normal":
             for neighbor in self.neighbors:
                 neighbor.incr_pebbles()
             self.pebbles -= len(self.neighbors)
+            self.toppled += 1
 
     def get_new_neighbors(self, nodes, num_neighbors):
 
@@ -245,23 +252,33 @@ def generate_random(n, pebbles):
                     if random.uniform(0, 1) > 0.5:
                         node.add_neighbor(neighbor)
                         edges += 1
-    for i in range(edges): random.choice(nodes).incr_pebbles()
+    for i in range(edges-pebbles): random.choice(nodes).incr_pebbles()
 
     return Graph(nodes)
 
 
-def loop(g):
-    if len(g.unstable()) == 0:
-        return g
-    else:
+def loop(g, iter = 0):
+    print("Looping!")
+    while True:
+        stillworking = False
+        iter += 1
+        biter = 0
+        l = len(g.unstable())
         for node in g.unstable():
+            biter += 1
+            print(f"Toppling node {biter} of {l}; iteration {iter}", end="\r")
+            stillworking = True
             node.topple()
-        return loop(g)
+        if not stillworking:
+            print(f"Graph is stable after {iter} iterations.")
+            return g
+
 
 if __name__ == '__main__':
     for i in range(3, 100):
         try:
-            loop(generate_random(i, "doesn't matter lol"))
+            g = loop(generate_random(i, -10))
+            # print(f"{i}: {True}; {[node.get_toppled() for node in g.get_nodes()]}; {[node.__str__() for node in g.get_nodes()]}")
             print(f"{i}: {True}")
         except RuntimeError:
             print(f"{i}: {False}")
