@@ -47,7 +47,7 @@ class Node:
         self.pebbles += 1
 
     def is_unstable(self):
-        return (len(self.neighbors) <= 4)
+        return (len(self.neighbors) <= 4) # <= self.pebbles
 
     def get_toppled(self):
         return self.toppled
